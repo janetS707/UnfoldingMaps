@@ -11,7 +11,11 @@ import processing.core.PGraphics;
  */
 public class LandQuakeMarker extends EarthquakeMarker {
 	
-	
+	// Less than this threshold is a light earthquake
+	public static final float THRESHOLD_MODERATE = 5;
+	// Less than this threshold is a minor earthquake
+	public static final float THRESHOLD_LIGHT = 4;
+		
 	public LandQuakeMarker(PointFeature quake) {
 		
 		// calling EarthquakeMarker constructor
@@ -32,7 +36,22 @@ public class LandQuakeMarker extends EarthquakeMarker {
 		// HINT: Notice the radius variable in the EarthquakeMarker class
 		// and how it is set in the EarthquakeMarker constructor
 		
-		// TODO: Implement this method
+		int m = (int) this.getMagnitude();
+		
+		if (m < THRESHOLD_LIGHT) {
+		    	m = m*2;
+		    }
+		else if (m >= THRESHOLD_LIGHT && m < THRESHOLD_MODERATE) {
+		    	m = m*3;
+		    }
+		else {
+		    	m = m*4;
+		    }
+		 
+		int calcX = (int) ((x + m)/2);
+		int calcY = (int) ((y + m)/2);
+		
+		pg.ellipse(calcX, calcY, m, m);
 		
 	}
 	

@@ -3,6 +3,7 @@ package module4;
 import de.fhpotsdam.unfolding.data.PointFeature;
 import de.fhpotsdam.unfolding.marker.SimplePointMarker;
 import processing.core.PGraphics;
+import java.awt.Color;
 
 /** Implements a visual marker for earthquakes on an earthquake map
  * 
@@ -28,13 +29,18 @@ public abstract class EarthquakeMarker extends SimplePointMarker
 	
 	/** Greater than or equal to this threshold is a moderate earthquake */
 	public static final float THRESHOLD_MODERATE = 5;
+	
 	/** Greater than or equal to this threshold is a light earthquake */
 	public static final float THRESHOLD_LIGHT = 4;
 
 	/** Greater than or equal to this threshold is an intermediate depth */
 	public static final float THRESHOLD_INTERMEDIATE = 70;
+	
 	/** Greater than or equal to this threshold is a deep depth */
-	public static final float THRESHOLD_DEEP = 300;
+	public static final float DEEP = 300;
+	
+	/** Greater than or equal to this threshold is a deep depth */
+	public static final float SHALLOW = 70;
 
 	// ADD constants for colors
 
@@ -67,7 +73,8 @@ public abstract class EarthquakeMarker extends SimplePointMarker
 		// call abstract method implemented in child class to draw marker shape
 		drawEarthquake(pg, x, y);
 		
-		// OPTIONAL TODO: draw X over marker if within past day		
+		// OPTIONAL TODO: draw X over marker if within past day	
+		//ageDetermination(pg, x, y);
 		
 		// reset to previous styling
 		pg.popStyle();
@@ -76,11 +83,33 @@ public abstract class EarthquakeMarker extends SimplePointMarker
 	
 	// determine color of marker from depth, and set pg's fill color 
 	// using the pg.fill method.
-	// We suggest: Deep = red, intermediate = blue, shallow = yellow
-	// But this is up to you, of course.
 	// You might find the getters below helpful.
 	private void colorDetermine(PGraphics pg) {
-		//TODO: Implement this method
+				
+		int d = (int) this.getDepth();
+		
+		if (d < SHALLOW) {
+			pg.fill(255, 255, 0); //shallow = yellow
+		    }
+		else if (d >= SHALLOW && d < DEEP) {
+			pg.fill(0, 153, 255); //intermediate = blue
+		    }
+		else {
+				pg.fill(255, 0, 0); //deep = red
+		    }
+	    
+	}
+	
+	private void ageDetermination(PGraphics pg, float x, float y) {
+		
+		String age = (String) properties.get("age"); 
+		
+		if (age.equalsIgnoreCase("Past Day")) {
+			System.out.println("age = " + age);
+			pg.fill(0, 0, 0); //black
+			pg.line(x, y, x+20, y+20);
+			pg.line(x, y+20, x+20, y);
+		}
 	}
 	
 	
