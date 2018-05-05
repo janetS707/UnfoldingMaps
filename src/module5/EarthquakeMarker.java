@@ -93,10 +93,19 @@ public abstract class EarthquakeMarker extends CommonMarker
 	@Override
 	public void showTitle(PGraphics pg, float x, float y)
 	{
-		// TODO: Implement this method
+		//display the title of the earthquake
+		// use showTitle from CommonMarker
+		
+		String markerName = (String)getTitle();
+		pg.fill(0, 0, 0);
+		pg.text(markerName, x, y);
 		
 	}
 
+	public void hideShow(PGraphics pg, float x, float y) {
+		double km = threatCircle();
+		
+	}
 	
 	/**
 	 * Return the "threat circle" radius, or distance up to 

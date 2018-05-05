@@ -11,6 +11,7 @@ import de.fhpotsdam.unfolding.geo.Location;
 import de.fhpotsdam.unfolding.marker.AbstractShapeMarker;
 import de.fhpotsdam.unfolding.marker.Marker;
 import de.fhpotsdam.unfolding.marker.MultiMarker;
+import de.fhpotsdam.unfolding.marker.SimplePointMarker;
 import de.fhpotsdam.unfolding.providers.Google;
 import de.fhpotsdam.unfolding.providers.MBTilesMapProvider;
 import de.fhpotsdam.unfolding.utils.MapUtils;
@@ -139,13 +140,18 @@ public class EarthquakeCityMap extends PApplet {
 		selectMarkerIfHover(cityMarkers);
 	}
 	
-	// If there is a marker under the cursor, and lastSelected is null 
-	// set the lastSelected to be the first marker found under the cursor
-	// Make sure you do not select two markers.
-	// 
+	
 	private void selectMarkerIfHover(List<Marker> markers)
 	{
-		// TODO: Implement this method
+		for (int k=0; k<markers.size(); k+=1) {
+			Marker marker = markers.get(k);
+			if (marker.isInside(map, mouseX, mouseY)) {
+				lastSelected = (CommonMarker)marker;
+				lastSelected.setSelected(true);
+				k=markers.size();
+				
+			}
+		}
 	}
 	
 	/** The event handler for mouse clicks
@@ -156,11 +162,37 @@ public class EarthquakeCityMap extends PApplet {
 	@Override
 	public void mouseClicked()
 	{
-		// TODO: Implement this method
-		// Hint: You probably want a helper method or two to keep this code
-		// from getting too long/disorganized
+	// clear the last selection
+		if (lastClicked != null) {
+			lastClicked.setSelected(false);
+			lastClicked = null;
+		
+		}
+		
+		checkCitiesForClick();
 	}
 	
+	
+	private void checkCitiesForClick()
+	{
+	    if (lastClicked != null) 
+	        return;
+	    for (Marker marker : cityMarkers) 
+	    {
+	        if (!marker.isHidden() &&
+	            marker.isInside(map, mouseX, mouseY) &&
+	            lastClicked == null)
+	        {
+	            lastClicked = (CommonMarker)marker;
+	        }
+	        else {
+	            marker.setHidden(true);
+	        }
+	    }
+	   
+	}
+		
+		
 	
 	// loop over and unhide all markers
 	private void unhideMarkers() {

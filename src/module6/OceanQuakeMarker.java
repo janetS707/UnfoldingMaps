@@ -29,7 +29,10 @@ public class OceanQuakeMarker extends EarthquakeMarker {
 		pg.rect(x-radius, y-radius, 2*radius, 2*radius);
 	}
 	
-
+	public int compareTo(EarthquakeMarker marker) {
+		return super.compareTo(marker);
+		
+	}
 	
 
 }
