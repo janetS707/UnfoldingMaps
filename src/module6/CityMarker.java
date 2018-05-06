@@ -38,12 +38,11 @@ public class CityMarker extends CommonMarker {
 	 * Implementation of method to draw marker on the map.
 	 */
 	public void drawMarker(PGraphics pg, float x, float y) {
-		//System.out.println("Drawing a city");
 		// Save previous drawing style
 		pg.pushStyle();
 		
 		// IMPLEMENT: drawing triangle for each city
-		pg.fill(150, 30, 30);
+		pg.fill(255, 0, 255);
 		pg.triangle(x, y-TRI_SIZE, x-TRI_SIZE, y+TRI_SIZE, x+TRI_SIZE, y+TRI_SIZE);
 		
 		// Restore previous drawing style

@@ -45,6 +45,7 @@ public class AirportMap extends PApplet {
 		// create markers from features
 		for(PointFeature feature : features) {
 			AirportMarker m = new AirportMarker(feature);
+			System.out.println(m.getProperties());
 	
 			m.setRadius(5);
 			airportList.add(m);

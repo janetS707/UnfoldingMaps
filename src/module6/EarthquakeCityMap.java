@@ -1,8 +1,8 @@
 package module6;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 
 import de.fhpotsdam.unfolding.UnfoldingMap;
@@ -14,12 +14,13 @@ import de.fhpotsdam.unfolding.marker.AbstractShapeMarker;
 import de.fhpotsdam.unfolding.marker.Marker;
 import de.fhpotsdam.unfolding.marker.MultiMarker;
 import de.fhpotsdam.unfolding.providers.AbstractMapProvider;
-import de.fhpotsdam.unfolding.providers.Google;
 import de.fhpotsdam.unfolding.providers.MBTilesMapProvider;
 import de.fhpotsdam.unfolding.providers.Microsoft;
 import de.fhpotsdam.unfolding.utils.MapUtils;
 import parsing.ParseFeed;
 import processing.core.PApplet;
+import processing.core.PImage;
+import processing.opengl.PGraphics3D;
 
 /** EarthquakeCityMap
  * An application with an interactive map displaying earthquake data.
@@ -58,7 +59,7 @@ public class EarthquakeCityMap extends PApplet {
 	private List<Marker> cityMarkers;
 	
 	// My Map Provider
-		AbstractMapProvider mapProvider = new Microsoft.HybridProvider();
+	AbstractMapProvider mapProvider = new Microsoft.HybridProvider();
 	
 	// Markers for each earthquake
 	private List<Marker> quakeMarkers;
@@ -70,9 +71,15 @@ public class EarthquakeCityMap extends PApplet {
 	private CommonMarker lastSelected;
 	private CommonMarker lastClicked;
 	
+	//***************Things I Added ******************
+	private List<Marker> airportMarkers;
+	private String oceanQuakeImage = "C:/DEV/gitRepo/UnfoldingMaps/data/oceanQuake.png";
+	//*****************************************************
+	
 	public void setup() {		
 		// (1) Initializing canvas and map tiles
 		size(900, 700, OPENGL);
+				
 		if (offline) {
 		    map = new UnfoldingMap(this, 200, 50, 650, 600, new MBTilesMapProvider(mbTilesString));
 		   // earthquakesURL = "2.5_week.atom";  // The same feed, but saved August 7, 2015
@@ -87,10 +94,10 @@ public class EarthquakeCityMap extends PApplet {
 		// FOR TESTING: Set earthquakesURL to be one of the testing files by uncommenting
 		// one of the lines below.  This will work whether you are online or offline
 		//earthquakesURL = "test1.atom";
-		earthquakesURL = "test2.atom";
+		//earthquakesURL = "test2.atom";
 		
 		// Uncomment this line to take the quiz
-		//earthquakesURL = "quiz2.atom";
+		earthquakesURL = "quiz2.atom";
 		
 		
 		// (2) Reading in earthquake data and geometric properties
@@ -98,12 +105,31 @@ public class EarthquakeCityMap extends PApplet {
 		List<Feature> countries = GeoJSONReader.loadData(this, countryFile);
 		countryMarkers = MapUtils.createSimpleMarkers(countries);
 		
-		//     STEP 2: read in city data
+		//     STEP 2a: read in city data
 		List<Feature> cities = GeoJSONReader.loadData(this, cityFile);
 		cityMarkers = new ArrayList<Marker>();
 		for(Feature city : cities) {
 		  cityMarkers.add(new CityMarker(city));
 		}
+		
+		//*********STEP 2b: read in airport data ***********
+		List<PointFeature> features = ParseFeed.parseAirports(this, "airports.dat");
+		
+		airportMarkers = new ArrayList<Marker>();
+		HashMap<Integer, Location> airports = new HashMap<Integer, Location>();
+		
+		// create markers from features
+		for(PointFeature feature : features) {
+			AirportMarker m = new AirportMarker(feature);
+	
+			m.setRadius(5);
+			airportMarkers.add(m);
+			
+			// put airport in hashmap with OpenFlights unique id for key
+			airports.put(Integer.parseInt(feature.getId()), feature.getLocation());
+		
+		}
+		//*****************************************************
 	    
 		//     STEP 3: read in earthquake RSS feed
 	    List<PointFeature> earthquakes = ParseFeed.parseEarthquake(this, earthquakesURL);
@@ -128,16 +154,21 @@ public class EarthquakeCityMap extends PApplet {
 	    //           for their geometric properties
 	    map.addMarkers(quakeMarkers);
 	    map.addMarkers(cityMarkers);
-	    
+	    map.addMarkers(airportMarkers);  //******************ADDED************************
 	    
 	}  // End setup
 	
 	
 	public void draw() {
+		
 		background(0);
 		map.draw();
 		addKey();
 		
+		// My enahancement
+ 		PImage oceanQuakeImg = loadImage(oceanQuakeImage, "png");
+ 		image(oceanQuakeImg, 25, 500);
+	
 	}
 	
 	
@@ -175,6 +206,7 @@ public class EarthquakeCityMap extends PApplet {
 		}
 		selectMarkerIfHover(quakeMarkers);
 		selectMarkerIfHover(cityMarkers);
+		selectMarkerIfHover(airportMarkers);
 		//loop();
 	}
 	
@@ -285,20 +317,20 @@ public class EarthquakeCityMap extends PApplet {
 	
 	// helper method to draw key in GUI
 	private void addKey() {	
-		// Remember you can use Processing's graphics methods here
-		fill(255, 250, 240);
 		
+		// Remember you can use Processing's graphics methods here	
+		fill(255, 250, 240);
 		int xbase = 25;
 		int ybase = 50;
 		
-		rect(xbase, ybase, 150, 250);
+		rect(xbase, ybase, 150, 350);
 		
 		fill(0);
 		textAlign(LEFT, CENTER);
 		textSize(12);
 		text("Earthquake Key", xbase+25, ybase+25);
 		
-		fill(150, 30, 30);
+		fill(255, 0, 255);
 		int tri_xbase = xbase + 35;
 		int tri_ybase = ybase + 50;
 		triangle(tri_xbase, tri_ybase-CityMarker.TRI_SIZE, tri_xbase-CityMarker.TRI_SIZE, 
@@ -344,7 +376,24 @@ public class EarthquakeCityMap extends PApplet {
 		line(centerx-8, centery-8, centerx+8, centery+8);
 		line(centerx-8, centery+8, centerx+8, centery-8);
 		
+		//********************
+		fill(0);
+		textAlign(LEFT, CENTER);
+		textSize(12);
+		text("Airport Key", xbase+25, ybase+250);
 		
+		fill(0, 255, 0);
+		tri_xbase = xbase + 35;
+		tri_ybase = ybase + 275;
+		triangle(tri_xbase, tri_ybase-AirportMarker.TRI_SIZE, tri_xbase-AirportMarker.TRI_SIZE, 
+				tri_ybase+AirportMarker.TRI_SIZE, tri_xbase+AirportMarker.TRI_SIZE, 
+				tri_ybase+AirportMarker.TRI_SIZE);
+		
+		fill(0, 0, 0);
+		textAlign(LEFT, CENTER);
+		text("Airports at", tri_xbase + 15, tri_ybase);
+		tri_ybase = ybase + 295;
+		text("Zero Altitude", tri_xbase + 15, tri_ybase);
 	}
 
 	
